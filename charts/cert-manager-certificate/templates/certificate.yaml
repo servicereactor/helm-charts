@@ -1,0 +1,37 @@
+# https://cert-manager.io/docs/usage/certificate/
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "cert-manager-certificate.fullname" . }}
+  labels:
+    {{- include "cert-manager-certificate.labels" . | nindent 4 }}
+spec:
+  secretName: {{ .Values.spec.secretName }}
+  # 1 year
+  duration: 8760h
+  subject:
+    organizations:
+    - "servicereactor.io"
+    countries:
+    - "US"
+    provinces:
+    - "Massachusetts"
+    localities:
+    - "Boston"
+    organizationalUnits:
+    - "Development"
+  commonName: "{{ .Values.spec.commonName }}"
+  isCA: false
+  dnsNames:
+    {{- toYaml .Values.spec.dnsNames | nindent 4 }}
+  usages:
+    - server auth
+    - client auth
+  issuerRef:
+    name: {{ .Values.spec.issuerRef }}
+    # We can reference ClusterIssuers by changing the kind here.
+    # The default value is Issuer (i.e. a locally namespaced Issuer)
+    kind: Issuer
+    # This is optional since cert-manager will default to this value however
+    # if you are using an external issuer, change this to that issuer group.
+    group: cert-manager.io

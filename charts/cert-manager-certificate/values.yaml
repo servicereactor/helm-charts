@@ -1,0 +1,10 @@
+# Default values for mailslurper.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+spec:
+  commonName: "example.com"
+  dnsNames:
+    - "*.example.com"
+  secretName: "tls-self-signed"
+  issuerRef: "self-signed"
