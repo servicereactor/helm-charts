@@ -1,13 +1,71 @@
-# Use the latest 2.1 version of CircleCI pipeline process engine. See: https://circleci.com/docs/2.0/configuration-reference
-version: 2.1
-# Use a package of configuration called an orb.
-orbs:
-  # Declare a dependency on the welcome-orb
-  welcome: circleci/welcome-orb@0.4.1
-# Orchestrate or schedule a set of jobs
+version: 2
+jobs:
+  lint-scripts:
+    docker:
+      - image: koalaman/shellcheck-alpine
+    steps:
+      - checkout
+      - run:
+          command: |
+            shellcheck -x .circleci/install_charts.sh
+            shellcheck -x .circleci/install_tools.sh
+            shellcheck -x .circleci/release.sh
+
+  lint-charts:
+    docker:
+      - image: quay.io/helmpack/chart-testing:v3.0.0-rc.1
+    steps:
+      - checkout
+      - run:
+          command: ct lint --config .circleci/ct.yaml
+
+  install-charts:
+    machine:
+      image: ubuntu-1604:202007-01
+    steps:
+      - checkout
+      - run:
+          no_output_timeout: 12m
+          command: .circleci/install_charts.sh
+
+  release-charts:
+    machine: true
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "67:39:77:05:f4:e4:3e:0a:04:66:38:c8:57:7c:27:40"
+      - run:
+          command: |
+            echo "export GIT_REPOSITORY_URL=$CIRCLE_REPOSITORY_URL" >> $BASH_ENV
+            echo "export GIT_USERNAME=$CIRCLE_PROJECT_USERNAME" >> $BASH_ENV
+            .circleci/install_tools.sh
+            .circleci/release.sh
+
 workflows:
-  # Name the workflow "welcome"
-  welcome:
-    # Run the welcome/run job in its own container
+  version: 2
+  lint-and-test:
     jobs:
-      - welcome/run
+      - lint-scripts
+      - lint-charts:
+          filters:
+            branches:
+              ignore: master
+            tags:
+              ignore: /.*/
+      - install-charts:
+          requires:
+            - lint-charts
+          filters:
+            branches:
+              ignore: master
+            tags:
+              ignore: /.*/
+  release:
+    jobs:
+      - release-charts:
+          filters:
+            tags:
+              ignore: /.*/
+            branches:
+              only: master
