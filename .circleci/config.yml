@@ -50,7 +50,7 @@ workflows:
       - lint-charts:
           filters:
             branches:
-              ignore: master
+              ignore: main
             tags:
               ignore: /.*/
       - install-charts:
@@ -58,7 +58,7 @@ workflows:
             - lint-charts
           filters:
             branches:
-              ignore: master
+              ignore: main
             tags:
               ignore: /.*/
   release:
@@ -68,4 +68,4 @@ workflows:
             tags:
               ignore: /.*/
             branches:
-              only: master
+              only: main
