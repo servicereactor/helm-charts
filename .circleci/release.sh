@@ -68,7 +68,7 @@ find_latest_tag() {
 }
 
 add_chart_repos() {
-    helm repo add bitnami https://charts.bitnami.com/bitnami
+    helm repo add servicereactor https://servicereactor.github.io/helm-charts
 }
 
 package_chart() {
@@ -77,11 +77,11 @@ package_chart() {
 }
 
 release_charts() {
-    cr upload -o codecentric -r helm-charts
+    cr upload -o servicereactor -r helm-charts
 }
 
 update_index() {
-    cr index -o codecentric -r helm-charts -c https://codecentric.github.io/helm-charts
+    cr index -o servicereactor -r helm-charts -c https://servicereactor.github.io/helm-charts
 
     git config user.email "$GIT_EMAIL"
     git config user.name "$GIT_USERNAME"
